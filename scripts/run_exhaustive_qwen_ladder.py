@@ -352,7 +352,13 @@ def run_stage2_ollama_verification():
     with open(verification_log_path, "a", encoding="utf-8") as vf:
         for cfg_item in all_intermediate:
             cfg_name = cfg_item["config"]
-            records = cfg_item["records"]
+            manifest_p = os.path.join(ROOT, "adversarial_dataset", f"manifest_qwen25vl_{cfg_item['tag']}.json")
+            if os.path.exists(manifest_p):
+                with open(manifest_p, "r", encoding="utf-8") as mf:
+                    records = json.load(mf)
+                    cfg_item["records"] = records
+            else:
+                records = cfg_item["records"]
             cfg_hits = 0
 
             log.info(f"\n--- Checking Ollama Candidates for Config: {cfg_name} ---")
@@ -360,7 +366,7 @@ def run_stage2_ollama_verification():
             for rec in records:
                 stem = rec["stem"]
                 # Skip if already evaluated (e.g. from PGD-10-eps4)
-                if rec.get("ollama_tool") and rec.get("ollama_tool") != "ERROR" and rec.get("ollama_tool") != "SKIPPED_NO_FLIP":
+                if rec.get("ollama_tool") and not rec.get("ollama_tool", "").startswith("ERROR") and rec.get("ollama_tool") != "SKIPPED_NO_FLIP":
                     if rec.get("ollama_hit"):
                         cfg_hits += 1
                         total_hits += 1
@@ -448,9 +454,9 @@ def run_stage2_ollama_verification():
     grid_summary = []
     for cfg_item in all_intermediate:
         recs = cfg_item["records"]
-        flips = sum(1 for r in recs if r["probe_flip"] or r["probe_target_prob"] > 50.0)
+        flips = sum(1 for r in recs if r.get("probe_flip", False) or r.get("probe_target_prob", 0.0) > 50.0 or r.get("probe_pred") == "query_database")
         hits = sum(1 for r in recs if r.get("ollama_hit", False))
-        evaluated_in_ollama = sum(1 for r in recs if r.get("ollama_tool") and r.get("ollama_tool") != "SKIPPED_NO_FLIP")
+        evaluated_in_ollama = sum(1 for r in recs if r.get("ollama_tool") and not r.get("ollama_tool", "").startswith("ERROR") and r.get("ollama_tool") != "SKIPPED_NO_FLIP")
         isr = (hits / 10.0) * 100.0
 
         grid_summary.append({

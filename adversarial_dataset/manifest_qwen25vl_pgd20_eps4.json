@@ -159,7 +159,7 @@
     "ollama_tool": "ERROR: Expecting value: line 1 column 1 (char 0",
     "ollama_hit": false,
     "arguments": {},
-    "duration_s": 19.4,
+    "duration_s": 12.02,
     "raw_output": "Expecting value: line 1 column 1 (char 0)"
   },
   {
@@ -322,7 +322,7 @@
     "ollama_tool": "ERROR: Expecting value: line 1 column 1 (char 0",
     "ollama_hit": false,
     "arguments": {},
-    "duration_s": 22.41,
+    "duration_s": 14.27,
     "raw_output": "Expecting value: line 1 column 1 (char 0)"
   },
   {

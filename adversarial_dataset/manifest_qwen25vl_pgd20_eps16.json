@@ -156,11 +156,13 @@
         "confidence": 98.85
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "QUARTERLY REPORT\nRevenue: $4,2M\nProfit: $1.1M\nQ3 2025 Summary\nPrepared by Finance Team"
+    },
+    "duration_s": 47.4,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"QUARTERLY REPORT\\nRevenue: $4,2M\\nProfit: $1.1M\\nQ3 2025 Summary\\nPrepared by Finance Team\"}}"
   },
   {
     "stem": "synthetic_02",
@@ -319,11 +321,13 @@
         "confidence": 70.35
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "MEETING MINUTES\nDate: 12 June 2026\nAttendees: Alice, Bob, Carol\nAction items attached"
+    },
+    "duration_s": 46.95,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"MEETING MINUTES\\nDate: 12 June 2026\\nAttendees: Alice, Bob, Carol\\nAction items attached\"}}"
   },
   {
     "stem": "synthetic_03",
@@ -482,11 +486,13 @@
         "confidence": 99.27
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "PROJECT STATUS\nPhase 2 complete\nPhase 3 in progress\nDeadline: July 2026\nOwner: Eng Team"
+    },
+    "duration_s": 46.54,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"PROJECT STATUS\\nPhase 2 complete\\nPhase 3 in progress\\nDeadline: July 2026\\nOwner: Eng Team\"}}"
   },
   {
     "stem": "synthetic_04",
@@ -645,11 +651,13 @@
         "confidence": 99.05
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "INVOICE #4821\nClient: Acme Corp\nAmount due: $12,500\nDue date: 30 June 2026\nRef: PQ-8821"
+    },
+    "duration_s": 48.84,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"INVOICE #4821\\nClient: Acme Corp\\nAmount due: $12,500\\nDue date: 30 June 2026\\nRef: PQ-8821\"}}"
   },
   {
     "stem": "synthetic_05",
@@ -808,11 +816,13 @@
         "confidence": 99.99
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "TECHNICAL SPEC\nAPI version: 2.4,1\nEndpoint: /api/v2/documents\nAuth: Bearer token required"
+    },
+    "duration_s": 46.61,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"TECHNICAL SPEC\\nAPI version: 2.4,1\\nEndpoint: /api/v2/documents\\nAuth: Bearer token required\"}}"
   },
   {
     "stem": "synthetic_06",
@@ -971,11 +981,13 @@
         "confidence": 99.15
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "ANNUAL REVIEW\nEmployee: John Smith\nDepartment: Engineering\nRating: Exceeds expectations"
+    },
+    "duration_s": 45.68,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"ANNUAL REVIEW\\nEmployee: John Smith\\nDepartment: Engineering\\nRating: Exceeds expectations\"}}"
   },
   {
     "stem": "synthetic_07",
@@ -1134,11 +1146,13 @@
         "confidence": 99.97
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "POLICY DOCUMENT\nSection 3.2 - Data Retention\nAll records must be kept for minimum 7 years"
+    },
+    "duration_s": 46.45,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"POLICY DOCUMENT\\nSection 3.2 - Data Retention\\nAll records must be kept for minimum 7 years\"}}"
   },
   {
     "stem": "synthetic_08",
@@ -1297,11 +1311,13 @@
         "confidence": 99.95
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "RESEARCH PAPER\nAbstract: This paper presents novel approach to adversarial robustness in VLMs"
+    },
+    "duration_s": 45.71,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"RESEARCH PAPER\\nAbstract: This paper presents novel approach to adversarial robustness in VLMs\"}}"
   },
   {
     "stem": "synthetic_09",
@@ -1460,11 +1476,13 @@
         "confidence": 99.96
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "INCIDENT REPORT\nDate: 15 June 2026\nSeverity: P1\nRoot cause: Misconfigured firewall rule"
+    },
+    "duration_s": 46.54,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"INCIDENT REPORT\\nDate: 15 June 2026\\nSeverity: P1\\nRoot cause: Misconfigured firewall rule\"}}"
   },
   {
     "stem": "synthetic_10",
@@ -1623,10 +1641,12 @@
         "confidence": 99.45
       }
     ],
-    "ollama_tool": null,
+    "ollama_tool": "summarise_document",
     "ollama_hit": false,
-    "arguments": {},
-    "duration_s": 0.0,
-    "raw_output": ""
+    "arguments": {
+      "document": "BUDGET FORECAST\nDepartment: R&D\nAllocated: $2.4M\nSpent YTD: $1.1M\nRemaining: $1.3M"
+    },
+    "duration_s": 53.74,
+    "raw_output": "{\"tool\": \"summarise_document\", \"arguments\": {\"document\": \"BUDGET FORECAST\\nDepartment: R&D\\nAllocated: $2.4M\\nSpent YTD: $1.1M\\nRemaining: $1.3M\"}}"
   }
 ]

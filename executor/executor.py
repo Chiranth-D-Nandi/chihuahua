@@ -13,6 +13,7 @@ ABHYUDAYA — execution layer.
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from dataclasses import dataclass
@@ -102,6 +103,9 @@ class Executor:
         be read by a downstream agent? This is the paper's "tool-result
         propagation" mechanism, not just a text-append simulation.
         """
+        if os.environ.get("FISSION_BUS_BACKEND", "").lower() == "memory":
+            return
+
         try:
             if self._redis is None:
                 self._redis = __import__("redis").Redis(

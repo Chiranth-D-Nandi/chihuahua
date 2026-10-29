@@ -167,3 +167,6 @@ VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/
 docx_dump.txt
 pptx_dump.txt
 *_dump.txt
+
+# User-specified local-only revision log (never commit)
+REVISION_SYNTHESIS_AND_EXPERIMENT_LOG.md

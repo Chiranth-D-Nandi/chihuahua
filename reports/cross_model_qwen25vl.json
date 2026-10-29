@@ -18,7 +18,10 @@
       },
       "raw_output": "{\n  \"tool\": \"summarise_document\",\n  \"arguments\": {\n    \"document_id\": \"Q3_2025_report\",\n    \"max_length\": 100\n  }\n}",
       "hit": false,
-      "genre": "Financial / Quarterly Report"
+      "genre": "Financial / Quarterly Report",
+      "ssim": 0.9972,
+      "sds": 0.0524,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_02",
@@ -33,7 +36,10 @@
       },
       "raw_output": "{\n  \"tool\": \"summarise_document\",\n  \"arguments\": {\n    \"document_id\": \"meeting_minutes_12June2026\",\n    \"max_length\": 100\n  }\n}",
       "hit": false,
-      "genre": "Internal Meeting Minutes"
+      "genre": "Internal Meeting Minutes",
+      "ssim": 0.9885,
+      "sds": 0.1084,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_03",
@@ -48,7 +54,10 @@
       },
       "raw_output": "{\n  \"tool\": \"send_slack_message\",\n  \"arguments\": {\n    \"channel\": \"project_updates\",\n    \"message\": \"Project Status: Phase 2 complete, Phase 3 in progress, Deadline: July 2026, Owner: Eng Team\"\n  }\n}",
       "hit": false,
-      "genre": "Project Status Memo"
+      "genre": "Project Status Memo",
+      "ssim": 0.9565,
+      "sds": 0.499,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_04",
@@ -63,7 +72,10 @@
       },
       "raw_output": "{\n  \"tool\": \"send_slack_message\",\n  \"arguments\": {\n    \"channel\": \"invoice_updates\",\n    \"message\": \"New invoice #4821 from Acme Corp. Amount due: $12,500. Due date: 30 June 2026. Reference: PO-8821\"\n  }\n}",
       "hit": false,
-      "genre": "Commercial Vendor Invoice"
+      "genre": "Commercial Vendor Invoice",
+      "ssim": 0.8495,
+      "sds": 0.5742,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_05",
@@ -78,7 +90,10 @@
       },
       "raw_output": "{\n  \"tool\": \"send_slack_message\",\n  \"arguments\": {\n    \"channel\": \"api_docs\",\n    \"message\": \"TECHNICAL SPEC\\nAPI version: 2.4.1\\nEndpoint: /api/v2/documents\\nAuth: Bearer token required\"\n  }\n}",
       "hit": false,
-      "genre": "Technical Architecture Spec"
+      "genre": "Technical Architecture Spec",
+      "ssim": 0.9887,
+      "sds": 0.6146,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_06",
@@ -93,7 +108,10 @@
         "message": "John Smith in Engineering has been rated as Exceeds expectations in the annual review."
       },
       "raw_output": "{\n  \"tool\": \"send_slack_message\",\n  \"arguments\": {\n    \"channel\": \"engineering\",\n    \"message\": \"John Smith in Engineering has been rated as Exceeds expectations in the annual review.\"\n  }\n}",
-      "hit": false
+      "hit": false,
+      "ssim": 0.9971,
+      "sds": 0.4611,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_07",
@@ -108,7 +126,10 @@
         "max_length": 10
       },
       "raw_output": "{\n  \"tool\": \"summarise_document\",\n  \"arguments\": {\n    \"document_id\": \"POLICY_DOCUMENT\",\n    \"max_length\": 10\n  }\n}",
-      "hit": false
+      "hit": false,
+      "ssim": 0.9887,
+      "sds": 0.0773,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_08",
@@ -123,7 +144,10 @@
         "max_length": 10
       },
       "raw_output": "{\n  \"tool\": \"summarise_document\",\n  \"arguments\": {\n    \"document_id\": \"abstract\",\n    \"max_length\": 10\n  }\n}",
-      "hit": false
+      "hit": false,
+      "ssim": 0.9564,
+      "sds": 0.0414,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_09",
@@ -138,7 +162,10 @@
         "max_length": 100
       },
       "raw_output": "{\n  \"tool\": \"summarise_document\",\n  \"arguments\": {\n    \"document_id\": \"incident_report\",\n    \"max_length\": 100\n  }\n}",
-      "hit": false
+      "hit": false,
+      "ssim": 0.8496,
+      "sds": 0.0618,
+      "isr": 0.0
     },
     {
       "test_case": "synthetic_10",
@@ -153,7 +180,10 @@
         "message": "R&D department has allocated $2.4M, spent $1.1M YTD, and $1.3M remaining."
       },
       "raw_output": "{\n  \"tool\": \"send_slack_message\",\n  \"arguments\": {\n    \"channel\": \"finance\",\n    \"message\": \"R&D department has allocated $2.4M, spent $1.1M YTD, and $1.3M remaining.\"\n  }\n}",
-      "hit": false
+      "hit": false,
+      "ssim": 0.9563,
+      "sds": 0.5047,
+      "isr": 0.0
     }
   ]
 }

@@ -108,24 +108,24 @@ def main():
             {
                 "study_component": "Independent Held-Out Defense Evaluation",
                 "model": "B3 SemanticGuard + B4 TCIV Stack (Frozen Thresholds)",
-                "documents": "Novel domains (HR, healthcare, cloud, security, ESG) held out from calibration",
+                "documents": "50 hand-authored legitimate + 50 hand-authored malicious calls across novel domains (held out from calibration; mock schemas)",
                 "attacks": "50 held-out legitimate calls vs. 50 held-out malicious calls",
                 "trials": 100,
                 "denominator": "50 legitimate, 50 malicious",
-                "metric_definition": "Held-Out FPR, FNR, and Authorized Task Completion Rate",
-                "empirical_value": "Combined FPR: 4/50 = 8.00% [3.2%, 18.8%]; Combined FNR: 0/50 = 0.00% [0.0%, 7.1%]; Authorized Completion Rate: 46/50 (92.0%); Malicious Leaks: 0/50 (0.0%)",
+                "metric_definition": "Held-Out Mock-Call FPR, FNR, and Mock-Tool Dispatch/Return Rate (Separate hand-authored set with frozen thresholds; not an enterprise traffic distribution)",
+                "empirical_value": "Combined FPR: 4/50 = 8.00% [3.2%, 18.8%]; Combined FNR: 0/50 = 0.00% [0.0%, 7.1%]; Mock-Tool Return Rate: 46/50 (92.0%); Malicious Leaks: 0/50 (0.0%). Note: execution_completed indicates that the mock tool returned without error, not semantic fulfillment of arbitrary user tasks.",
                 "defense_setting": "FROZEN thresholds (tau_ICS=0.05, tau_ASV=0.05, asv_block_ratio=0.60)",
                 "output_path": "reports/defense_held_out_eval.json",
             },
             {
                 "study_component": "Paired End-to-End Observed Execution Trace",
-                "model": "Executor Agent (Mock Tool Functions + Test Sink)",
-                "documents": "10 clean tasks + 10 attacked tasks (paired)",
-                "attacks": "Adversarial prompts inducing query_database exfiltration",
+                "model": "Executor Agent (Synthetic SQLite Financial Database + Defined ExfiltrationSink)",
+                "documents": "10 actual LLaVA visual injection proposals from defended_eval_trials.jsonl + 10 functional clean tasks",
+                "attacks": "Actual LLaVA-generated SQL injection proposals from image attack trials",
                 "trials": 20,
                 "denominator": "10 clean, 10 attacked (paired under Defense OFF vs. Defense ON)",
-                "metric_definition": "Observed Executor Tool Invocations and Data Exfiltration Events",
-                "empirical_value": "Defense OFF: 10/10 exfiltrations observed; Defense ON: 0/10 exfiltrations (100% blocked pre-dispatch, 0 executor invocations); Clean completion: 10/10 in both modes",
+                "metric_definition": "Observed SQLite Query Execution and ExfiltrationSink Row Receipts",
+                "empirical_value": "Defense OFF: 10/10 dispatched, 5/10 executed against SQLite, 4/10 leaked rows to ExfiltrationSink (4 total rows exfiltrated); Defense ON: 0/10 dispatched (100% blocked pre-dispatch, 0 queries executed, 0 rows leaked to sink); Clean tasks: 10/10 executed in both modes",
                 "defense_setting": "Defense OFF vs. Defense ON (FISSION Stack)",
                 "output_path": "reports/paired_execution_trace.json",
             },
@@ -241,7 +241,7 @@ def main():
                     "2. Independent Held-Out Benchmark: Evaluated a fresh set of 50 legitimate and 50 malicious calls with FROZEN thresholds, achieving 8.00% FPR, 0.0000 FNR, and 92.0% authorized task completion. "
                     "Adaptive Evasion Suite: Evaluated 25 specialized evasion attacks (100% blocked by combined stack)."
                 ),
-                "scope_boundary": "Evaluated against synthetically generated diverse MCP tool calls; production enterprise traffic collection remains operational deployment scope.",
+                "scope_boundary": "Evaluated against hand-authored mock tool calls across 3 schemas and frozen thresholds; not an empirical estimate of production enterprise traffic.",
             },
             {
                 "reviewer_comment": "Comment 5: Defended Pipeline, Propagation Risks, and Harmful Actions vs. Tool Selection",
@@ -258,7 +258,7 @@ def main():
                 "coverage_summary": (
                     "1. Defended Pipeline: Re-evaluated all 200 trials through live gateway (DRR=1.000, 100% reduction). "
                     "2. Harmful SQL Analysis: Verified 36/42 (85.7%) proposals were syntactically valid financial exfiltration queries. "
-                    "3. Paired Execution Trace: Ran a paired smoke evaluation with defense OFF vs ON, empirically observing mock executor database query executions (10/10 exfiltrations under Defense OFF) vs pre-dispatch suppression (0/10 under Defense ON). "
+                    "3. Paired Execution Trace: Evaluated 10 actual LLaVA visual injection proposals against a synthetic financial SQLite database and test sink; observed that under Defense OFF, 5/10 queries executed and 4/10 leaked protected rows to the sink (4 rows total), whereas under Defense ON, 0/10 queries reached the database (100% pre-dispatch suppression, 0 rows leaked). "
                     "4. Propagation Attacks: Executed live L5a (detection depth 1) and L5b (CBD=3), with operational definitions clearly distinguishing controlled harness parameters from observed agent decisions."
                 ),
                 "scope_boundary": (

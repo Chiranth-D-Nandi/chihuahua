@@ -497,6 +497,8 @@ def run_worm_benchmark(
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
     from orchestrator.orchestrator import Orchestrator
+    from executor.executor import Executor
+    import threading
 
     parser = argparse.ArgumentParser(description="L5a Autonomous Worm Propagation")
     parser.add_argument("--hops", type=int, default=max_hops)
@@ -506,6 +508,11 @@ def run_worm_benchmark(
     args = parser.parse_args()
 
     orchestrator = Orchestrator()
+    executor = Executor(bus=orchestrator.bus)
+    ex_thread = threading.Thread(target=executor.listen, daemon=True, name="worm_executor")
+    ex_thread.start()
+    time.sleep(0.5)
+
     worm = AutonomousWorm(orchestrator=orchestrator)
 
     result = worm.run(
@@ -526,7 +533,7 @@ def run_worm_benchmark(
     print(f"  {'Hop':>4}  {'Infected':>8}  {'Tool':<25}  {'Status':<12}  {'Malicious':>10}")
     print("  " + "-" * 70)
     for h in result.hops:
-        tag = "🔴" if h.malicious_triggered else ("🟢" if not h.infected else "🟡")
+        tag = "[MAL]" if h.malicious_triggered else ("[CLEAN]" if not h.infected else "[INF]")
         print(
             f"  {h.hop:>4}  {'YES' if h.infected else 'no':>8}  "
             f"{h.tool_called or '(none)':<25}  {h.status:<12}  "

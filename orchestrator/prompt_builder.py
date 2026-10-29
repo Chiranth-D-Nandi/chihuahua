@@ -3,10 +3,20 @@ import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from typing import Optional
+
 from config.config import cfg
 
 
 class PromptBuilder:
+
+    def __init__(self):
+        self._system_prompt_cache: Optional[str] = None
+
+    def get_system_prompt(self) -> str:
+        if self._system_prompt_cache is not None:
+            return self._system_prompt_cache
+        return self.build_system_prompt()
 
     def build_system_prompt(self) -> str:
         tools_schema = {}

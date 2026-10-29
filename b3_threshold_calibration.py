@@ -60,7 +60,7 @@ for case in cases:
     print(f"{case['label']:55s} {score:>10.4f}")
 
 print()
-print("── Per-argument ASV scores (for the two query_database cases) ──")
+print("-- Per-argument ASV scores (for the two query_database cases) --")
 for case in cases:
     if case["tool_name"] != "query_database":
         continue
@@ -73,10 +73,10 @@ for case in cases:
             continue
         from defenses.b3_semantic.semantic_guard import _cosine_sim
         score = _cosine_sim(str(arg_value), expected)
-        print(f"  {arg_name:12s} = {str(arg_value)[:40]:40s} → {score:.4f}")
+        print(f"  {arg_name:12s} = {str(arg_value)[:40]:40s} -> {score:.4f}")
 
 print()
-print("── Current config thresholds ──")
+print("-- Current config thresholds --")
 print(f"ics_threshold   = {guard.ics_threshold}")
 print(f"asv_threshold   = {guard.asv_threshold}")
 print(f"asv_block_ratio = {guard.asv_block_ratio}")

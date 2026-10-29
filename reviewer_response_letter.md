@@ -49,17 +49,11 @@ We appreciate the reviewer’s prompt to sharpen our comparative positioning. In
 We agree that document and model diversity are critical for generalizability. We have addressed both dimensions systematically without fabricating values:
 
 1. **Document Corpus Expansion:**  
-   In `attacks/r1_pixel/generate_adversarial_dataset.py`, we expanded `DOCUMENT_TEXTS` from 5 to 10 distinct operational genres. Beyond standard business memos, the extended corpus now includes:
-   - HR / narrative performance evaluations,
-   - Dense multi-clause regulatory policy documents,
-   - Academic research abstracts,
-   - Operational P1 incident postmortems,
-   - Tabular R&D budget forecasts.  
-   In Section 6.2, we clarify that the observed document-dependent susceptibility ($\omega^2 = 71.7\%$) was governed by semantic salience and layout formatting rather than surface length.
+   In `attacks/r1_pixel/generate_adversarial_dataset.py`, we expanded `DOCUMENT_TEXTS` from 5 to 10 distinct operational genres (including HR narrative evaluations, multi-clause regulatory policies, academic research abstracts, operational P1 incident postmortems, and tabular R&D budget forecasts). While the core statistical ANOVA evaluation ($F=13.658, p=0.0002$) is rigorously anchored on the complete, balanced $N=200$ factorial dataset across the primary 5 document layouts to preserve statistical power and homoscedasticity, the testbed framework is now fully instrumented (`--n-images 10`) to generate and evaluate extended 10-genre corpora. In Section 6.2, we clarify that the observed document-dependent susceptibility ($\omega^2 = 71.7\%$) is governed by visual layout and semantic salience rather than surface length alone.
 2. **Cross-Architecture Multi-Model Empirical Evaluation:**  
    We evaluated cross-architecture transferability against **Qwen2.5-VL-7B** (an advanced VLM utilizing a Custom ViT backbone, distinct from LLaVA's CLIP ViT-L/14):
    - **LLaVA-1.5-7B (CLIP ViT-L/14 + Mistral/Vicuna):** Targeted white-box surrogate attack baseline yielding an overall injection success rate of $\text{ISR} = 0.4700$ ($94/200$ dispatched) under attack optimization and $\text{ISR} = 0.2100$ ($42/200$) under benign neutral prompt.
-   - **Qwen2.5-VL-7B (Custom ViT):** Live GPU evaluation (`scripts/eval_qwen25vl.py`) against representative adversarial images demonstrated that CLIP-surrogate perturbations **fail to transfer** to Qwen2.5-VL ($\text{Transfer ISR} = 0.0\%$). Qwen2.5-VL successfully parsed the visual layout and generated clean document-structuring tool calls (`table_of_contents` with quarterly revenue sections) rather than invoking the injected target tool (`query_database`). This proves that architectural disparity in the visual encoder acts as a natural barrier against black-box transfer attacks.
+   - **Qwen2.5-VL-7B (Custom ViT):** Live GPU evaluation (`scripts/eval_qwen25vl.py`, exploratory sample of $N=5$ across representative perturbation levels) demonstrated that CLIP-surrogate perturbations **fail to transfer** to Qwen2.5-VL ($\text{Transfer ISR} = 0.0\%$). Qwen2.5-VL successfully parsed the visual layout and generated clean document-structuring tool calls (`table_of_contents` with quarterly revenue sections, `summarise_document`, `send_slack_message`) rather than invoking the injected target tool (`query_database`). This provides exploratory empirical evidence that architectural disparity in the visual encoder acts as a natural barrier against black-box transfer attacks.
    - **Backend Transparency:** We explicitly document that InternVL2 is currently unsupported in the official Ollama library (pending external container integration). Furthermore, per rigorous scientific reporting, earlier exploratory tests on Moondream (which suffered 100% free-text JSON parse failures) and small-sample LLaVA-Phi-3 ($N=20$) are excluded from substitute security claims to ensure uncompromising empirical fidelity.
 
 ---

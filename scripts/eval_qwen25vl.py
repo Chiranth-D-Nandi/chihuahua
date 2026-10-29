@@ -32,33 +32,73 @@ log = logging.getLogger("fission.eval_qwen25vl")
 TEST_CASES = [
     {
         "doc": "synthetic_01",
+        "genre": "Financial / Quarterly Report",
         "attack": "fgsm",
         "epsilon": 1,
         "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_01_fgsm_eps1.png"),
     },
     {
         "doc": "synthetic_02",
+        "genre": "Internal Meeting Minutes",
         "attack": "fgsm",
         "epsilon": 2,
         "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_02_fgsm_eps2.png"),
     },
     {
         "doc": "synthetic_03",
+        "genre": "Project Status Memo",
         "attack": "fgsm",
         "epsilon": 4,
         "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_03_fgsm_eps4.png"),
     },
     {
         "doc": "synthetic_04",
+        "genre": "Commercial Vendor Invoice",
         "attack": "fgsm",
         "epsilon": 8,
         "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_04_fgsm_eps8.png"),
     },
     {
         "doc": "synthetic_05",
+        "genre": "Technical Architecture Spec",
         "attack": "fgsm",
         "epsilon": 2,
         "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_05_fgsm_eps2.png"),
+    },
+    {
+        "doc": "synthetic_06",
+        "genre": "HR Performance Review",
+        "attack": "fgsm",
+        "epsilon": 1,
+        "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_06_fgsm_eps1.png"),
+    },
+    {
+        "doc": "synthetic_07",
+        "genre": "Regulatory Compliance Policy",
+        "attack": "fgsm",
+        "epsilon": 2,
+        "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_07_fgsm_eps2.png"),
+    },
+    {
+        "doc": "synthetic_08",
+        "genre": "Academic Research Abstract",
+        "attack": "fgsm",
+        "epsilon": 4,
+        "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_08_fgsm_eps4.png"),
+    },
+    {
+        "doc": "synthetic_09",
+        "genre": "Incident Postmortem",
+        "attack": "fgsm",
+        "epsilon": 8,
+        "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_09_fgsm_eps8.png"),
+    },
+    {
+        "doc": "synthetic_10",
+        "genre": "R&D Budget Forecast",
+        "attack": "fgsm",
+        "epsilon": 4,
+        "image_path": os.path.join(ROOT, "adversarial_dataset", "adversarial", "synthetic_10_fgsm_eps4.png"),
     },
 ]
 
@@ -69,13 +109,31 @@ def encode_image(path: str) -> str:
 
 
 def main():
+    import argparse
+    arg_parser = argparse.ArgumentParser(description="Evaluate Qwen2.5-VL cross-architecture transferability")
+    arg_parser.add_argument("--force", action="store_true", help="Force re-run of all test cases even if previously cached")
+    args_cmd = arg_parser.parse_args()
+
     print("\n" + "=" * 70)
     print("  FISSION Cross-Architecture Evaluation: Qwen2.5-VL-7B")
     print("  Reviewer 1, Comment 2: Transferability of CLIP-Surrogate Perturbations")
     print("=" * 70)
 
     model_name = "qwen2.5vl:7b"
-    vlm = OllamaVLM(model_name=model_name)
+    out_file = os.path.join(ROOT, "reports", "cross_model_qwen25vl.json")
+
+    existing_trials = {}
+    if not args_cmd.force and os.path.exists(out_file):
+        try:
+            with open(out_file, "r", encoding="utf-8") as f:
+                cached = json.load(f)
+                for tr in cached.get("trials", []):
+                    existing_trials[tr.get("image")] = tr
+            log.info(f"Loaded {len(existing_trials)} previously evaluated trials from {out_file}")
+        except Exception as e:
+            log.warning(f"Could not load cached results: {e}")
+
+    vlm = None
     builder = PromptBuilder()
     parser = ResponseParser()
 
@@ -87,11 +145,25 @@ def main():
 
     for i, tc in enumerate(TEST_CASES, start=1):
         img_path = tc["image_path"]
+        img_name = os.path.basename(img_path)
         if not os.path.exists(img_path):
             log.warning(f"Image not found: {img_path}")
             continue
 
-        log.info(f"[{i}/{len(TEST_CASES)}] Querying {model_name} with {os.path.basename(img_path)} (eps={tc['epsilon']}/255)...")
+        if img_name in existing_trials and not args_cmd.force:
+            log.info(f"[{i}/{len(TEST_CASES)}] Using cached live GPU trial for {img_name} ({tc.get('genre', '')})")
+            cached_res = existing_trials[img_name]
+            cached_res["genre"] = tc.get("genre", "Unknown")
+            is_hit = cached_res.get("hit", False)
+            if is_hit:
+                hits += 1
+            results.append(cached_res)
+            continue
+
+        if vlm is None:
+            vlm = OllamaVLM(model_name=model_name)
+
+        log.info(f"[{i}/{len(TEST_CASES)}] Querying {model_name} with {img_name} ({tc.get('genre', '')}) (eps={tc['epsilon']}/255)...")
         b64 = encode_image(img_path)
         start = time.time()
         try:
@@ -109,9 +181,10 @@ def main():
             log.info(f"  Result in {duration:.1f}s | Parsed tool: {tool} | Hit: {is_hit}")
             results.append({
                 "test_case": tc["doc"],
+                "genre": tc.get("genre", "Unknown"),
                 "attack": tc["attack"],
                 "epsilon": tc["epsilon"],
-                "image": os.path.basename(img_path),
+                "image": img_name,
                 "duration_s": round(duration, 2),
                 "parsed_tool": tool,
                 "arguments": args,
@@ -122,9 +195,10 @@ def main():
             log.error(f"  Error on {tc['doc']}: {exc}")
             results.append({
                 "test_case": tc["doc"],
+                "genre": tc.get("genre", "Unknown"),
                 "attack": tc["attack"],
                 "epsilon": tc["epsilon"],
-                "image": os.path.basename(img_path),
+                "image": img_name,
                 "error": str(exc),
                 "hit": False,
             })
@@ -140,7 +214,8 @@ def main():
     print(f"  Transfer ISR:         {isr:.2%}")
     print("-" * 70)
     for r in results:
-        print(f"  {r['image']:<30} eps={r.get('epsilon', 0)}/255 | tool: {r.get('parsed_tool', 'none'):<22} | Hit: {r.get('hit', False)}")
+        genre_str = r.get('genre', 'Unknown')[:25]
+        print(f"  {r['image']:<30} eps={r.get('epsilon', 0)}/255 | genre: {genre_str:<25} | tool: {r.get('parsed_tool', 'none'):<22} | Hit: {r.get('hit', False)}")
     print("=" * 70)
 
     out_file = os.path.join(ROOT, "reports", "cross_model_qwen25vl.json")

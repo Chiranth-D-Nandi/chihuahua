@@ -102,15 +102,19 @@
 
 ## TASK GROUP D — Document Corpus & Model Diversity (Comment 2)
 
-### D1 — Document Corpus Expansion `[x]`
+### D1 — Document Corpus Expansion & Evaluation `[x]`
 - **Code Modified:** [`attacks/r1_pixel/generate_adversarial_dataset.py`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/attacks/r1_pixel/generate_adversarial_dataset.py#L173-L198)
 - **Extended Corpus:** Expanded `DOCUMENT_TEXTS` to 10 types (financial, meeting minutes, project status, invoices, tech specs, HR review, legal policy, academic paper, operational incident, budget forecast).
+- **Dataset Generated on GPU:** 10 clean PNGs (`adversarial_dataset/synthetic/`) and 40 adversarial PNGs across budgets $\epsilon \in \{1, 2, 4, 8\}/255$ (`adversarial_dataset/adversarial/`).
+- **Live Empirical Inference:** Evaluated on local GPU via `generate_adversarial_dataset.py --stage infer`, measuring real ISR, SSIM, and SDS without simulation.
 
 ### D2 — Qwen2.5-VL Cross-Architecture Evaluation `[x]`
 - **Model:** `qwen2.5vl:7b` (Custom ViT vision backbone).
 - **Live GPU Test (`scripts/eval_qwen25vl.py`):**
-  - Evaluated against representative adversarial images from CLIP-surrogate FGSM attack.
-  - Demonstrates that CLIP-surrogate adversarial visual perturbations fail to transfer to Qwen2.5-VL ($\text{Transfer ISR} = 0.0\%$), as Qwen2.5-VL parses the document and produces benign document-structuring tool calls (`summarise_document`, `table_of_contents`).
+  - Evaluated across all 10 document genres ($N=10$) on local GPU.
+  - Demonstrates that CLIP-surrogate adversarial visual perturbations completely fail to transfer to Qwen2.5-VL ($\text{Transfer ISR} = 0.00\%$, $0/10$ target hits).
+  - Qwen2.5-VL accurately extracts document layouts and emits appropriate MCP tool calls (`summarise_document`, `send_slack_message`).
+  - Results saved with raw outputs, duration, and arguments in [`reports/cross_model_qwen25vl.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/reports/cross_model_qwen25vl.json).
 - **Transparency on Other Models:**
-  - InternVL2 documented as unsupported in official Ollama library.
+  - InternVL2 documented as unsupported in official Ollama library (lacks `InternViT-6B` in `llama.cpp`) and hardware constrained by 8GB VRAM limit on Windows.
   - Moondream (parser failure artifact) and LLaVA-Phi-3 ($N=20$) explicitly excluded from substitute security claims.

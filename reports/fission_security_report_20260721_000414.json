@@ -1,0 +1,73 @@
+{
+  "title": "FISSION Security Benchmark Report",
+  "generated_at": "2026-07-20 18:34:14 UTC",
+  "models": [
+    "llava:latest"
+  ],
+  "attacks": [
+    "fgsm"
+  ],
+  "groups": [
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4203,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.52,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4419,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.42,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4683,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.46,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4393,
+      "sbi": false,
+      "mean_delta_isr": null
+    }
+  ],
+  "overall": {
+    "n_entries": 20,
+    "n_groups": 4,
+    "n_models": 1,
+    "mean_isr": 0.47,
+    "mean_ssim": 0.9482,
+    "mean_sds": 0.4425,
+    "sbi_pass_groups": 1,
+    "sbi_pass_rate": 0.25,
+    "baseline_isr": null
+  },
+  "defenses": [],
+  "source_manifests": [
+    "C:\\Users\\abhyu\\Desktop\\CCNCS\\FINAL\\FISSION_FINAL\\niddebartilla\\dashboard\\..\\dashboard\\..\\adversarial_dataset/manifest.json"
+  ],
+  "notes": [],
+  "cross_architecture": false
+}

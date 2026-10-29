@@ -1,0 +1,167 @@
+{
+  "title": "FISSION Cross-Architecture Benchmark (LLaVA / Qwen2.5-VL / InternVL2)",
+  "generated_at": "2026-10-28 15:30:14 UTC",
+  "models": [
+    "llava-phi3:latest",
+    "llava:latest",
+    "moondream:latest"
+  ],
+  "attacks": [
+    "fgsm"
+  ],
+  "groups": [
+    {
+      "model": "llava-phi3:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.0953,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava-phi3:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.1387,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava-phi3:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.1729,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava-phi3:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.117,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.5,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4211,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.5,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4416,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4678,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.5,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4402,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "moondream:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.9672,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "moondream:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.9672,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "moondream:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.9672,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "moondream:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.0,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.9672,
+      "sbi": false,
+      "mean_delta_isr": null
+    }
+  ],
+  "overall": {
+    "n_entries": 60,
+    "n_groups": 12,
+    "n_models": 3,
+    "mean_isr": 0.165,
+    "mean_ssim": 0.9482,
+    "mean_sds": 0.5136,
+    "sbi_pass_groups": 2,
+    "sbi_pass_rate": 0.1667,
+    "baseline_isr": null
+  },
+  "defenses": [],
+  "source_manifests": [
+    "adversarial_dataset/manifest_llava_latest.json",
+    "adversarial_dataset/manifest_moondream_latest.json",
+    "adversarial_dataset/manifest_llava-phi3_latest.json"
+  ],
+  "notes": [
+    "Cross-architecture results present. Non-LLaVA rows are TRANSFER-attack results unless a per-model probe was trained (see generate_adversarial_dataset.py Session 17 note)."
+  ],
+  "cross_architecture": true
+}

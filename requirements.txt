@@ -1,0 +1,39 @@
+# FISSION — Python dependencies
+# Install: pip install -r requirements.txt
+
+# Core
+numpy>=1.24
+scipy>=1.10
+Pillow>=10.0
+requests>=2.31
+httpx>=0.25
+redis>=5.0
+
+# ML / VLM
+torch>=2.1
+torchvision>=0.16
+transformers>=4.38
+sentence-transformers>=2.3
+scikit-image>=0.22
+# openai-clip is optional; R1 CLIP path uses `import clip`
+# clip @ git+https://github.com/openai/CLIP.git
+
+# API / dashboard
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pydantic>=2.5
+
+# Experiment tracking
+mlflow>=2.14
+
+# Reporting
+jinja2>=3.1
+matplotlib>=3.8
+reportlab>=4.0
+
+# Demo / CLI
+rich>=13.0
+
+# Tests
+pytest>=7.4

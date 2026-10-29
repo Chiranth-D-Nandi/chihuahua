@@ -1,0 +1,169 @@
+# ============================================================
+#  FISSION — .gitignore
+# ============================================================
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ── Virtual environments ─────────────────────────────────────
+fission_env/
+venv/
+.venv/
+env/
+ENV/
+
+# ── Environment variables ────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── MLflow ───────────────────────────────────────────────────
+mlruns/
+mlflow/
+mlflow.db
+artifacts/
+
+# ── Jupyter ──────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Model weights and checkpoints ───────────────────────────
+# These are large — pull from HuggingFace/Ollama, never commit
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.gguf
+*.ggml
+models/
+checkpoints/
+weights/
+!attacks/r1_pixel/probe.pt
+
+# ── Dataset files ────────────────────────────────────────────
+data/
+datasets/
+*.csv
+*.parquet
+*.arrow
+*.h5
+*.hdf5
+*.npz
+*.npy
+
+# ── Generated images (adversarial outputs) ───────────────────
+outputs/
+results/
+adversarial_images/
+attack_outputs/
+*.adversarial.png
+*.adversarial.jpg
+
+# ── Seaborn / Matplotlib chart outputs ───────────────────────
+charts/
+figures/
+*.png
+*.jpg
+*.jpeg
+*.svg
+!dashboard/ui/src/assets/*.png
+!dashboard/ui/src/assets/*.svg
+!adversarial_dataset/**/*.png
+!adversarial_dataset/*.png
+
+# ── Logs ─────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ── Redis dump ───────────────────────────────────────────────
+dump.rdb
+
+# ── Docker ───────────────────────────────────────────────────
+.dockerignore
+
+# ── Node / React frontend ────────────────────────────────────
+dashboard/ui/node_modules/
+dashboard/ui/dist/
+dashboard/ui/build/
+dashboard/ui/.vite/
+dashboard/ui/coverage/
+
+# ── OS files ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── IDE files ────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.code-workspace
+
+# ── pytest / coverage ────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# ── Secrets — never commit these ─────────────────────────────
+secrets/
+*.pem
+*.key
+*.cert
+*.crt
+hmac_secret.txt
+
+.aicp/
+
+# ── FISSION local secrets & env ──────────────────────────────
+fission.env
+*.env.local
+
+# ── Generated reports & outputs (kept for reproducibility) ────
+# reports/
+
+# ── MLflow artifact store ─────────────────────────────────────
+mlartifacts/
+
+# ── SQLite / other local DBs ─────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Adversarial dataset (manifests and test images kept) ──────
+# adversarial_dataset/
+
+# ── Nested duplicate directory ────────────────────────────────
+VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/
+
+# ── Office / PDF documents (internship reports, slides, etc.) ─
+# These are large binary files; share via Drive/SharePoint instead
+*.docx
+*.pdf
+*.pptx
+*.ppt
+*.xlsx
+*.xls
+
+# ── Raw text dumps ───────────────────────────────────────────
+docx_dump.txt
+pptx_dump.txt
+*_dump.txt

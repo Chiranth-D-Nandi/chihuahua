@@ -1,0 +1,169 @@
+{
+  "title": "FISSION Cross-Architecture Benchmark Scaffold (LLaVA real \u00b7 Qwen/InternVL2 pending live run)",
+  "generated_at": "2026-07-20 13:46:03 UTC",
+  "models": [
+    "internvl2:8b",
+    "llava:latest",
+    "qwen2.5vl:7b"
+  ],
+  "attacks": [
+    "fgsm"
+  ],
+  "groups": [
+    {
+      "model": "internvl2:8b",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4203,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "internvl2:8b",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.52,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4419,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "internvl2:8b",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.42,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4683,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "internvl2:8b",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.46,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4393,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4203,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.52,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4419,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.42,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4683,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.46,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4393,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "qwen2.5vl:7b",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4203,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "qwen2.5vl:7b",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.52,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4419,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "qwen2.5vl:7b",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.42,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4683,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "qwen2.5vl:7b",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.46,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4393,
+      "sbi": false,
+      "mean_delta_isr": null
+    }
+  ],
+  "overall": {
+    "n_entries": 60,
+    "n_groups": 12,
+    "n_models": 3,
+    "mean_isr": 0.47,
+    "mean_ssim": 0.9482,
+    "mean_sds": 0.4425,
+    "sbi_pass_groups": 3,
+    "sbi_pass_rate": 0.25,
+    "baseline_isr": null
+  },
+  "defenses": [],
+  "source_manifests": [
+    "adversarial_dataset/cross_model/manifest_merged.json"
+  ],
+  "notes": [
+    "LLaVA rows are REAL metrics from adversarial_dataset/manifest.json.",
+    "Qwen2.5-VL and InternVL2 rows are SCHEMA PLACEHOLDERS cloned from LLaVA so the cross-architecture report/UI is demoable offline. They are NOT live transfer-attack measurements.",
+    "Replace placeholders with: ollama pull qwen2.5vl:7b && ollama pull internvl2:8b && python -m evaluation.cross_model --stage infer",
+    "Until per-model probes exist, non-LLaVA numbers (once live) remain TRANSFER-attack results (Session 17 note).",
+    "Cross-architecture results present. Non-LLaVA rows are TRANSFER-attack results unless a per-model probe was trained (see generate_adversarial_dataset.py Session 17 note)."
+  ],
+  "cross_architecture": true
+}

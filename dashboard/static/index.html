@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FISSION — Evaluation Pipeline</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#0f172a;--text2:#475569;--text3:#94a3b8;
+--pri:#2563eb;--pri-light:#dbeafe;--green:#16a34a;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;
+--yellow:#ca8a04;--yellow-bg:#fef9c3;--purple:#7c3aed;--radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding:24px}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:28px}
+nav h1{font-size:20px;font-weight:700;letter-spacing:1px}
+nav h1 span{color:var(--pri)}
+nav .health{font-size:12px;display:flex;align-items:center;gap:6px}
+nav .dot{width:8px;height:8px;border-radius:50%;background:#94a3b8}
+nav .dot.ok{background:var(--green)}
+nav .dot.err{background:var(--red)}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 24px;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--text2);transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri)}
+.panel{display:none}.panel.active{display:block}
+.hf-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;box-shadow:var(--shadow)}
+.hf-results{max-height:220px;overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:6px}
+.hf-item{padding:8px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.hf-item:last-child{border-bottom:none}
+.hf-item code{font-size:11px}
+.muted{color:var(--text3);font-size:12px}
+
+/* PIPELINE PANEL */
+.pipeline-form{display:flex;flex-direction:column;gap:14px;background:var(--card);padding:20px;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow)}
+.pipeline-form label{font-size:13px;font-weight:600;color:var(--text2)}
+.pipeline-form textarea,.pipeline-form input,.pipeline-form select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;background:var(--bg)}
+.pipeline-form textarea{resize:vertical;min-height:60px}
+.row{display:flex;gap:12px}
+.row>*{flex:1}
+.btn{padding:10px 28px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-pri{background:var(--pri);color:#fff}.btn-pri:hover{background:#1d4ed8}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.btn-sec{background:var(--card);color:var(--text);border:1px solid var(--border)}.btn-sec:hover{border-color:var(--pri)}
+
+/* RESULTS TABLE */
+.results{margin-top:24px}
+.results h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.layer-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
+.layer-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);background:var(--bg);border-bottom:1px solid var(--border)}
+.layer-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.layer-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-pass{background:var(--green-bg);color:var(--green)}
+.badge-blocked{background:var(--red-bg);color:var(--red)}
+.badge-error{background:var(--yellow-bg);color:var(--yellow)}
+.badge-skipped{background:#f1f5f9;color:var(--text3)}
+.mono{font-family:'SF Mono',Consolas,monospace;font-size:12px;color:var(--text2)}
+.metric-val{font-weight:700;color:var(--purple)}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;box-shadow:var(--shadow)}
+.summary-card h4{font-size:13px;font-weight:600;margin-bottom:8px}
+.summary-row{display:flex;gap:24px;flex-wrap:wrap;font-size:13px}
+.summary-row .lbl{color:var(--text3)}
+.raw-output{margin-top:12px;background:#f8fafc;border:1px solid var(--border);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;max-height:160px;overflow:auto;white-space:pre-wrap;word-break:break-all;color:var(--text2)}
+.spinner-inline{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:spin .5s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* BENCHMARK PANEL */
+.bench-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.bench-grid{grid-template-columns:1fr}}
+.bench-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.bench-card h4{font-size:13px;font-weight:600;margin-bottom:4px}
+.bench-card .desc{font-size:12px;color:var(--text3);margin-bottom:10px}
+.bench-card .btn{width:100%}
+.bench-result{margin-top:12px;font-size:12px}
+.bench-result table{width:100%;border-collapse:collapse;margin-top:6px}
+.bench-result th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:4px 6px;border-bottom:1px solid var(--border)}
+.bench-result td{padding:4px 6px;border-bottom:1px solid #f1f5f9;font-size:12px}
+.tag-atk{color:var(--red);font-weight:700;font-size:10px}
+.tag-def{color:var(--green);font-weight:700;font-size:10px}
+
+footer{text-align:center;padding:32px 0 16px;font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav>
+  <h1><span>FISSION Cross Architecture VLM Evaluation System</span></h1>
+  <div class="health" id="health"><span class="dot" id="h-dot"></span><span id="h-text">checking…</span></div>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('pipeline')">Pipeline Runner</div>
+  <div class="tab" onclick="switchTab('benchmark')">Benchmark Suite</div>
+  <div class="tab" onclick="switchTab('report')">Security Report</div>
+</div>
+
+<!-- ═══════════ PIPELINE PANEL ═══════════ -->
+<div class="panel active" id="panel-pipeline">
+  <div class="pipeline-form">
+    <div>
+      <label>Task Description</label>
+      <textarea id="f-task" placeholder="e.g. Summarise document doc_2024_q3_report in 100 words and post to #research-team.">Summarise document doc_2024_q3_report in 100 words.</textarea>
+    </div>
+    <div class="row">
+      <div style="flex:1">
+        <label>Model</label>
+        <select id="f-model">
+          <optgroup label="🖥️ Ollama (local)" id="ollama-optgroup">
+            <option value="llava:latest">LLaVA-1.6-Mistral-7B (llava:latest)</option>
+            <option value="qwen2.5vl:7b">Qwen2.5-VL-7B (qwen2.5vl:7b)</option>
+            <option value="llama3.2-vision:11b">Llama 3.2 Vision 11B (llama3.2-vision:11b)</option>
+          </optgroup>
+          <optgroup label="➕ Added from HF Browser" id="hf-custom-optgroup" style="display:none">
+          </optgroup>
+        </select>
+        <div class="muted" id="model-meta" style="margin-top:4px">Loading model profiles…</div>
+      </div>
+    </div>
+
+    <div class="row" style="align-items: flex-end;">
+      <div>
+        <label>Image (optional)</label>
+        <input type="file" id="f-image" accept="image/*">
+      </div>
+      <div style="flex:1">
+        <label>Live Attack Injection</label>
+        <select id="f-attack">
+          <option value="none">None (Clean)</option>
+          <option value="fgsm">FGSM (ε=8/255)</option>
+          <option value="pgd">PGD (ε=8/255, 10 steps)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-pri" id="btn-run" onclick="runPipeline()">Run Pipeline</button>
+      <button class="btn btn-sec" onclick="reloadModels()">Refresh Models</button>
+    </div>
+  </div>
+
+  <div class="hf-box">
+    <strong style="font-size:13px">HuggingFace Model Browser</strong>
+    <p class="muted" style="margin:4px 0 10px">Search HF Hub — click <strong>Add to Pipeline</strong> to add a model to the dropdown. You must <code>ollama pull &lt;tag&gt;</code> it first for inference to work.</p>
+    <div class="row">
+      <div>
+        <label>Search</label>
+        <input id="hf-q" value="llava" placeholder="llava, qwen2.5-vl, internvl…">
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px">
+        <button class="btn btn-sec" onclick="searchHF()">Search HF</button>
+      </div>
+    </div>
+    <div class="hf-results" id="hf-results"><div class="hf-item muted">Click Search HF to load models</div></div>
+    <div class="muted" style="margin-top:8px">Selected HF ID: <code id="hf-selected">—</code>
+      <button class="btn btn-sec" style="padding:4px 10px;margin-left:8px;font-size:11px" onclick="copyHF()">Copy</button>
+      <button class="btn btn-pri" style="padding:4px 10px;margin-left:8px;font-size:11px" onclick="addHFToPipeline()">Add to Pipeline ↑</button>
+    </div>
+  </div>
+
+  <div class="results" id="pipeline-results"></div>
+</div>
+
+<!-- ═══════════ BENCHMARK PANEL ═══════════ -->
+<div class="panel" id="panel-benchmark">
+  <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+    <div><strong style="font-size:15px">Benchmark Suite</strong><br><span style="font-size:12px;color:var(--text3)">Run each module independently — all metrics computed from real model inference</span></div>
+    <button class="btn btn-pri" id="btn-bench-all" onclick="runAllBench()">Run All</button>
+  </div>
+  <div style="margin-bottom: 12px; font-size: 14px; font-weight: bold; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">Attack Modules</div>
+  <div class="bench-grid" style="margin-bottom: 24px;">
+    <div class="bench-card" id="bc-r0"><h4><span class="tag-atk">ATTACK</span> R0 — BadCLIP + B0</h4><p class="desc">Poisoned probe + Neural Cleanse validation against a real backdoor artefact</p><button class="btn btn-sec" onclick="runBench('r0-backdoor','bc-r0',this)">Run</button><div class="bench-result" id="br-r0"></div></div>
+    <div class="bench-card" id="bc-r1"><h4><span class="tag-atk">ATTACK</span> R1 — Manifest Summary</h4><p class="desc">Aggregate ISR/SSIM/SDS/SBI from on-disk adversarial_dataset/manifest.json</p><button class="btn btn-sec" onclick="runBench('r1-manifest','bc-r1',this)">Run</button><div class="bench-result" id="br-r1"></div></div>
+    <div class="bench-card" id="bc-r2"><h4><span class="tag-atk">ATTACK</span> R2 — Attention Poisoning</h4><p class="desc">PGD entropy minimization attack on transformer attention</p><button class="btn btn-sec" onclick="runBench('r2-attack','bc-r2',this)">Run</button><div class="bench-result" id="br-r2"></div></div>
+    <div class="bench-card" id="bc-r3"><h4><span class="tag-atk">ATTACK</span> R3 — Semantic Drift Score</h4><p class="desc">Cosine distance between clean and adversarial outputs (sentence-transformers)</p><button class="btn btn-sec" onclick="runBench('r3-sds','bc-r3',this)">Run</button><div class="bench-result" id="br-r3"></div></div>
+    <div class="bench-card" id="bc-r5b"><h4><span class="tag-atk">ATTACK</span> R5b — Context Poisoning</h4><p class="desc">Cumulative drift across shared MCP context buffer over N hops</p><button class="btn btn-sec" onclick="runBench('r5b-context','bc-r5b',this)">Run</button><div class="bench-result" id="br-r5b"></div></div>
+  </div>
+
+  <div style="margin-bottom: 12px; font-size: 14px; font-weight: bold; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">Defense Modules</div>
+  <div class="bench-grid">
+    <div class="bench-card" id="bc-b2"><h4><span class="tag-def">DEFENSE</span> B2 — Attention Monitor</h4><p class="desc">Entropy + KL + Mahalanobis anomaly detection on attention weights</p><button class="btn btn-sec" onclick="runBench('b2-attention','bc-b2',this)">Run</button><div class="bench-result" id="br-b2"></div></div>
+    <div class="bench-card" id="bc-b4"><h4><span class="tag-def">DEFENSE</span> B4 — TCIV</h4><p class="desc">3-layer tool call verification: whitelist + schema + HMAC</p><button class="btn btn-sec" onclick="runBench('b4-tciv','bc-b4',this)">Run</button><div class="bench-result" id="br-b4"></div></div>
+    <div class="bench-card" id="bc-b5"><h4><span class="tag-def">DEFENSE</span> B5 — Honeypot Agent</h4><p class="desc">Decoy agent detects worm propagation via semantic drift</p><button class="btn btn-sec" onclick="runBench('b5-phantom','bc-b5',this)">Run</button><div class="bench-result" id="br-b5"></div></div>
+  </div>
+  
+  <div style="margin-top: 24px; display: flex; gap: 24px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 300px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+      <h4 style="margin-top: 0; font-size: 13px; color: var(--text2); text-transform: uppercase;">Metrics & Abbreviations Glossary</h4>
+      <ul style="font-size: 11.5px; line-height: 1.6; padding-left: 18px; color: var(--text2); margin-bottom: 0;">
+        <li><strong>ISR (Injection Success Rate):</strong> % of inputs that successfully force the VLM to execute the target tool.</li>
+        <li><strong>SSIM (Structural Similarity Index Measure):</strong> Visual similarity between clean and poisoned image (1.0 = identical).</li>
+        <li><strong>SDS (Semantic Drift Score):</strong> Cosine distance between embeddings of clean vs. poisoned outputs.</li>
+        <li><strong>CLPR (Caption-Label Pearson Correlation r):</strong> Correlation between perturbation budget (epsilon) and ISR.</li>
+        <li><strong>ICS (Intent-Call Similarity):</strong> B3 Guard Layer 1 cosine score measuring user intent vs. tool description.</li>
+        <li><strong>ASV (Argument Semantic Validation):</strong> B3 Guard Layer 2 check validating argument content vs. declared semantic roles.</li>
+        <li><strong>BSD (Baseline Score Drift):</strong> B3 Guard Layer 3 percentile monitor tracking score deviation from clean baselines.</li>
+        <li><strong>TCIV (Tool Call Integrity Verifier):</strong> B4 3-layer verifier enforcing tool whitelists, schemas, and HMAC signatures.</li>
+        <li><strong>ADR / AER (Attention Deviation / Entropy Ratio):</strong> B2 metrics tracking abnormal transformer attention concentration and distribution.</li>
+        <li><strong>CPR / CBD (Context Poisoning Rate / Backdoor Depth):</strong> R5 metrics measuring worm propagation rate and hop depth through agent memory.</li>
+        <li><strong>SBI (Structural Boundary Index):</strong> Minimal perturbation budget required to trigger tool-call flipping.</li>
+        <li><strong>FGSM / PGD (Fast Gradient Sign Method / Projected Gradient Descent):</strong> Single-step and multi-step iterative pixel attack algorithms.</li>
+        <li><strong>SPECTRE (Backdoor Scanner):</strong> B0 pre-deployment backdoor scanner using activation clustering and STRIP.</li>
+        <li><strong>Honeypot Agent:</strong> B5 decoy agent monitoring worm propagation without executing external tools.</li>
+      </ul>
+    </div>
+    <div style="flex: 1; min-width: 300px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 16px;">
+      <h4 style="margin-top: 0; font-size: 13px; color: var(--text2); text-transform: uppercase;">Benchmark Parameters</h4>
+      <ul style="font-size: 12px; line-height: 1.6; padding-left: 20px; color: var(--text2); margin-bottom: 0;">
+        <li><strong>R0 Backdoor:</strong> Alpha opacity = 1.0 (Opaque Trigger)</li>
+        <li><strong>R1 Pixel Sweep:</strong> Epsilon budgets = [1/255, 2/255, 4/255]</li>
+        <li><strong>R2 Attention:</strong> PGD Steps = 100, Target = Entropy Minimization</li>
+        <li><strong>Live Pipeline:</strong> Epsilon = 8/255 (FGSM/PGD default)</li>
+        <li><strong>B4 TCIV:</strong> 3-Layer Check (Whitelist, Schema, HMAC)</li>
+        <li><strong>B5 Honeypot:</strong> N_hops = 5 (Max Propagation Depth)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:24px; font-size:14px; line-height:1.6; padding: 16px; background: #fff3cd; border-left: 4px solid #ffc107; color: #856404; border-radius: 4px;">
+    <strong style="font-size:15px; display:block; margin-bottom:8px;">⚠️ Why are B0, B1, and B3 missing from this list?</strong>
+    Modules <strong>B0 (Neural Cleanse)</strong>, <strong>B1 (Image Sanitizer)</strong>, and <strong>B3 (Semantic Guard)</strong> do not have standalone benchmark cards because they cannot be evaluated in isolation:<br><br>
+    • <strong>B0</strong> is evaluated jointly within the <strong>R0 Backdoor</strong> benchmark (it scans the poisoned weights generated by R0).<br>
+    • <strong>B1</strong> and <strong>B3</strong> are passive, dynamic guardrails that operate natively within the <strong>Live Pipeline Runner</strong> (they do not output standalone anomaly scores).
+  </div>
+</div>
+
+<!-- ═══════════ REPORT PANEL ═══════════ -->
+<div class="panel" id="panel-report">
+  <div class="pipeline-form">
+    <div>
+      <label>Manifest path</label>
+      <input id="rep-manifest" value="adversarial_dataset/manifest.json">
+    </div>
+    <div>
+      <label>Report title</label>
+      <input id="rep-title" value="FISSION Security Benchmark Report">
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-pri" id="btn-report" onclick="genReport()">Generate Report</button>
+      <a class="btn btn-sec" href="/api/report/latest" target="_blank" rel="noopener">Open Latest HTML</a>
+      <a class="btn btn-sec" href="/api/report/latest.json" target="_blank" rel="noopener">Latest JSON</a>
+      <a class="btn btn-sec" href="/api/report/latest.pdf" target="_blank" rel="noopener">Download PDF</a>
+    </div>
+    <p class="muted">Writes HTML + JSON (+ PDF if reportlab is installed) under <code>reports/</code> and optionally logs metrics to MLflow.</p>
+  </div>
+  <div class="results" id="report-results"></div>
+</div>
+
+<footer>FISSION — Abhyudaya M Hegde and Chiranth D Nandi · PES CCNCS Summer Internship 2026</footer>
+
+</div>
+<script>
+/* ── Tabs ── */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${t}"]`).classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+}
+
+/* ── Health ── */
+async function checkHealth(){
+  try{
+    const r=await fetch('/api/health');const d=await r.json();
+    const ok=d.ollama;
+    document.getElementById('h-dot').className='dot '+(ok?'ok':'err');
+    const bits=[];
+    bits.push(d.ollama?'Ollama ✓':'Ollama ✗');
+    if(d.mlflow!==undefined) bits.push(d.mlflow?'MLflow ✓':'MLflow ✗');
+    document.getElementById('h-text').textContent=bits.join(' · ');
+  }catch{document.getElementById('h-text').textContent='API offline';document.getElementById('h-dot').className='dot err';}
+}
+checkHealth();setInterval(checkHealth,15000);
+
+/* ── Models (Ollama profiles + HF API) ── */
+async function reloadModels(){
+  try{
+    const r=await fetch('/api/models');const d=await r.json();
+    const sel=document.getElementById('f-model');
+    const cur=sel.value;
+
+    const existingIds = new Set();
+    const existingLabels = new Set();
+    const ollamaOpts = [];
+
+    // Helper to skip non-VLMs and models requiring Ollama 0.4.0+ (like llama3.2-vision)
+    const isVLM = (id) => {
+      const lower = id.toLowerCase();
+      if (lower === 'llama3.2:latest' || lower === 'llama3.2:3b' || lower.startsWith('llama3:') || lower.startsWith('mistral:')) {
+        return false;
+      }
+      if (lower.includes('llama3.2-vision')) {
+        return false;
+      }
+      return true;
+    };
+
+    if(d.profiles && d.profiles.length){
+      for(const p of d.profiles){
+        if(p.source==='ollama_profile' && !p.id.includes('/') && isVLM(p.id)){
+          const label = p.display_name || p.id;
+          if(!existingIds.has(p.id) && !existingLabels.has(label)){
+            existingIds.add(p.id);
+            existingLabels.add(label);
+            ollamaOpts.push({ id: p.id, label: label });
+          }
+        }
+      }
+    }
+
+    if(d.pulled && d.pulled.length){
+      for(const p of d.pulled){
+        if(p.id && isVLM(p.id) && !existingIds.has(p.id)){
+          const label = `${p.id} (pulled)`;
+          if(!existingLabels.has(label)){
+            existingIds.add(p.id);
+            existingLabels.add(label);
+            ollamaOpts.push({ id: p.id, label: label });
+          }
+        }
+      }
+    }
+
+    sel.innerHTML='';
+    if(ollamaOpts.length){
+      const og=document.createElement('optgroup');
+      og.label='🖥️ Ollama (local)';
+      og.id='ollama-optgroup';
+      for(const item of ollamaOpts){
+        const opt=document.createElement('option');
+        opt.value=item.id;opt.textContent=item.label;
+        og.appendChild(opt);
+      }
+      sel.appendChild(og);
+    }
+
+    // Always append custom HF group so addHFToPipeline works
+    const hfGroup=document.createElement('optgroup');
+    hfGroup.label='➕ Added from HF Browser';
+    hfGroup.id='hf-custom-optgroup';
+    hfGroup.style.display='none';
+    sel.appendChild(hfGroup);
+
+    if([...sel.options].some(o=>o.value===cur)) sel.value=cur;
+    else if(d.default) sel.value=d.default;
+
+    const meta=document.getElementById('model-meta');
+    if(meta){
+      const pulled=(d.pulled||[]).map(x=>x.id).filter(Boolean);
+      let txt=`Ollama models: ${ollamaOpts.length}`;
+      if(pulled.length) txt+=` · Pulled: ${pulled.join(', ')}`;
+      meta.textContent=txt;
+    }
+
+  }catch(e){console.warn('reloadModels',e);}
+}
+reloadModels();
+
+let _hfSelected=null;
+async function searchHF(){
+  const q=document.getElementById('hf-q').value||'llava';
+  const box=document.getElementById('hf-results');
+  box.innerHTML='<div class="hf-item muted"><span class="spinner-inline"></span> Searching…</div>';
+  try{
+    const r=await fetch('/api/models/hf/search?q='+encodeURIComponent(q)+'&limit=12');
+    const d=await r.json();
+    if(!d.models || !d.models.length){box.innerHTML='<div class="hf-item muted">No results</div>';return;}
+    box.innerHTML='';
+    for(const m of d.models){
+      const row=document.createElement('div');row.className='hf-item';
+      row.innerHTML=`<div><code>${esc(m.id)}</code><div class="muted">${esc(m.pipeline_tag||'')} ${m.source==='huggingface_curated'?'· curated fallback':''}</div></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sec" style="padding:4px 10px;font-size:11px">Select</button>
+          <button class="btn btn-pri" style="padding:4px 10px;font-size:11px">Add ↑</button>
+        </div>`;
+      const btns=row.querySelectorAll('button');
+      btns[0].onclick=()=>{_hfSelected=m.id;document.getElementById('hf-selected').textContent=m.id;};
+      btns[1].onclick=()=>{_hfSelected=m.id;document.getElementById('hf-selected').textContent=m.id;addHFToPipeline();};
+      box.appendChild(row);
+    }
+    if(d.warning){
+      const w=document.createElement('div');w.className='hf-item muted';w.textContent=d.warning;box.appendChild(w);
+    }
+  }catch(e){box.innerHTML=`<div class="hf-item" style="color:var(--red)">Error: ${esc(e.message)}</div>`;}
+}
+function copyHF(){
+  if(!_hfSelected)return;
+  navigator.clipboard.writeText(_hfSelected).catch(()=>{});
+}
+function addHFToPipeline(){
+  if(!_hfSelected){alert('Select a model first from the search results.');return;}
+  const sel=document.getElementById('f-model');
+  // Check if already in dropdown
+  for(const opt of sel.options){
+    if(opt.value===_hfSelected){
+      sel.value=_hfSelected;
+      showAddSuccess();
+      return;
+    }
+  }
+  // Find or create custom HF group
+  let grp=document.getElementById('hf-custom-optgroup');
+  if(!grp){
+    grp=document.createElement('optgroup');
+    grp.label='➕ Added from HF Browser';
+    grp.id='hf-custom-optgroup';
+    sel.appendChild(grp);
+  }
+  grp.style.display='';
+  const opt=document.createElement('option');
+  opt.value=_hfSelected;
+  opt.textContent=_hfSelected+' (HF/Ollama)';
+  grp.appendChild(opt);
+  sel.value=_hfSelected;
+  showAddSuccess();
+}
+
+function showAddSuccess(){
+  const status=document.createElement('span');
+  status.textContent=' ✓ Added to pipeline';
+  status.style.cssText='color:var(--green,#22c55e);font-size:12px;margin-left:8px;font-weight:bold';
+  const targetEl=document.getElementById('hf-selected');
+  if(targetEl&&targetEl.parentNode){
+    targetEl.parentNode.appendChild(status);
+    setTimeout(()=>status.remove(),3000);
+  }
+}
+
+async function genReport(){
+  const btn=document.getElementById('btn-report');btn.disabled=true;btn.innerHTML='<span class="spinner-inline"></span>Generating…';
+  const out=document.getElementById('report-results');
+  out.innerHTML='<div class="muted"><span class="spinner-inline"></span> Building security report…</div>';
+  const fd=new FormData();
+  fd.append('manifest',document.getElementById('rep-manifest').value);
+  fd.append('title',document.getElementById('rep-title').value);
+  fd.append('log_mlflow','true');
+  try{
+    const r=await fetch('/api/report/generate',{method:'POST',body:fd});
+    const d=await parseResponse(r);
+    if(d.status!=='success'){
+      out.innerHTML=`<div style="color:var(--red)">${esc(d.error||'failed')}</div>`;
+    }else{
+      out.innerHTML=`<div class="summary-card"><h4>Report ready</h4>
+        <div class="summary-row">
+          <div><span class="lbl">HTML:</span> <a href="${esc(d.data.html_url)}" target="_blank">Open latest</a></div>
+          <div><span class="lbl">Path:</span> <code>${esc(d.data.relative_path||d.data.html_path)}</code></div>
+          <div><span class="lbl">MLflow run:</span> <code>${esc(d.data.mlflow_run_id||'—')}</code></div>
+          <div><span class="lbl">Time:</span> ${d.duration_ms}ms</div>
+        </div></div>
+        <iframe src="/api/report/latest" style="width:100%;height:520px;border:1px solid var(--border);border-radius:8px;margin-top:12px;background:#fff"></iframe>`;
+    }
+  }catch(e){out.innerHTML=`<div style="color:var(--red)">${esc(e.message)}</div>`;}
+  btn.disabled=false;btn.textContent='Generate Report';
+}
+
+/* ── Pipeline ── */
+async function parseResponse(r){
+  /* Never call r.json() blindly — FastAPI 500s often return HTML/text, which
+     produced the "JSON.parse: unexpected character at line 1 column 1" error. */
+  const text=await r.text();
+  let data=null;
+  if(text){
+    try{data=JSON.parse(text);}catch(_){/* not JSON */}
+  }
+  if(!r.ok){
+    const detail=(data&&(data.detail||data.error||data.message))||text||r.statusText;
+    const msg=typeof detail==='string'?detail:JSON.stringify(detail);
+    throw new Error(`HTTP ${r.status}: ${msg.substring(0,500)}`);
+  }
+  if(data===null){
+    throw new Error(`Expected JSON but got: ${(text||'(empty)').substring(0,300)}`);
+  }
+  return data;
+}
+
+async function runPipeline(){
+  const btn=document.getElementById('btn-run');btn.disabled=true;btn.innerHTML='<span class="spinner-inline"></span>Running…';
+  const out=document.getElementById('pipeline-results');
+  out.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3)"><span class="spinner-inline"></span> Querying VLM and running defense stack…</div>';
+
+  const fd=new FormData();
+  fd.append('task',document.getElementById('f-task').value);
+  fd.append('model_name',document.getElementById('f-model').value);
+  const img=document.getElementById('f-image').files[0];
+  if(img)fd.append('image',img);
+  const attackType = document.getElementById('f-attack').value;
+  fd.append('attack_type', attackType);
+
+  try{
+    const r=await fetch('/api/pipeline/run',{method:'POST',body:fd});
+    const d=await parseResponse(r);
+    out.innerHTML=renderPipeline(d);
+  }catch(e){out.innerHTML=`<div style="color:var(--red);padding:16px">Error: ${esc(e.message)}</div>
+    <div class="muted" style="padding:0 16px 16px">Tips: is Ollama running (<code>ollama serve</code>)? Is <code>llava</code> pulled? Check the uvicorn terminal for a Python traceback.</div>`;}
+  btn.disabled=false;btn.textContent='Run Pipeline';
+}
+
+function getImgSrc(b64) {
+  if (!b64) return '';
+  if (b64.startsWith('data:')) return b64;
+  return `data:image/png;base64,${b64}`;
+}
+
+function renderPipeline(d){
+  let h='<h3>Pipeline Results</h3>';
+  
+  const origSrc = getImgSrc(d.original_image_b64);
+  const advSrc = getImgSrc(d.adv_image_b64);
+
+  if (advSrc && origSrc) {
+    h+=`<div style="display:flex; gap:16px; margin-bottom:16px;">
+          <div style="flex:1;">
+            <div class="lbl" style="margin-bottom:4px; font-weight:600">Original Upload</div>
+            <img src="${origSrc}" style="max-width:100%; max-height:260px; border-radius:6px; border:1px solid var(--border); object-fit:contain; background:#f8fafc; padding:4px"/>
+          </div>
+          <div style="flex:1;">
+            <div class="lbl" style="margin-bottom:4px; color:var(--red); font-weight:600">Poisoned Image (Adversarial)</div>
+            <img src="${advSrc}" style="max-width:100%; max-height:260px; border-radius:6px; border:1.5px solid var(--red); object-fit:contain; background:#fff5f5; padding:4px"/>
+          </div>
+        </div>`;
+  } else if (origSrc) {
+    h+=`<div style="margin-bottom:16px;">
+          <div class="lbl" style="margin-bottom:4px; font-weight:600">Original Upload (Clean)</div>
+          <img src="${origSrc}" style="max-width:320px; max-height:260px; border-radius:6px; border:1px solid var(--border); object-fit:contain; background:#f8fafc; padding:4px"/>
+        </div>`;
+  }
+  
+  h+='<table class="layer-table"><tr><th>Layer</th><th>Status</th><th>Detail</th><th>Metrics</th><th>Time</th></tr>';
+  for(const l of d.layers){
+    const cls=l.status==='PASS'?'pass':l.status==='BLOCKED'?'blocked':'error';
+    const metricsStr=l.metrics?Object.entries(l.metrics).map(([k,v])=>`<span class="lbl">${k}:</span> <span class="metric-val">${typeof v==='number'?v.toFixed(4):v}</span>`).join(' &nbsp; '):'—';
+    h+=`<tr><td><strong>${esc(l.layer)}</strong></td><td><span class="badge badge-${cls}">${l.status}</span></td><td class="mono">${esc(l.detail||'')}</td><td style="font-size:11px">${metricsStr}</td><td class="mono">${l.duration_ms}ms</td></tr>`;
+  }
+  h+='</table>';
+  h+='<div class="summary-card"><h4>Summary</h4><div class="summary-row">';
+  h+=`<div><span class="lbl">Status:</span> <span class="badge badge-${d.final_status==='CLEAN'?'pass':d.final_status==='BLOCKED'?'blocked':'error'}">${d.final_status}</span></div>`;
+  
+  if (d.adv_image_b64) {
+    const injStatus = d.final_status === 'CLEAN' ? '<span style="color:var(--red);font-weight:bold">SUCCESS (Defenses Bypassed)</span>' : '<span style="color:var(--good);font-weight:bold">FAILED (Caught by Defenses)</span>';
+    h+=`<div><span class="lbl">Adversarial Injection:</span> ${injStatus}</div>`;
+  }
+  
+  if(d.tool_name)h+=`<div><span class="lbl">Tool:</span> <strong>${esc(d.tool_name)}</strong> <i style="color:var(--text3);font-size:11px;margin-left:6px">(Mocked execution for sandbox safety)</i></div>`;
+  if(d.tool_args)h+=`<div><span class="lbl">Args:</span> <span class="mono">${esc(JSON.stringify(d.tool_args))}</span></div>`;
+  h+=`<div><span class="lbl">Model:</span> ${esc(d.model)}</div>`;
+  h+=`<div><span class="lbl">Total:</span> <strong>${d.total_duration_ms}ms</strong></div>`;
+  h+='</div>';
+  if(d.tool_result)h+=`<div style="margin-top:8px;font-size:12px"><span class="lbl">Result:</span> ${esc(d.tool_result)}</div>`;
+  if(d.block_reason)h+=`<div style="margin-top:8px;font-size:12px;color:var(--red)"><span class="lbl">Blocked:</span> ${esc(d.blocked_at)} — ${esc(d.block_reason)}</div>`;
+  h+='</div>';
+  if(d.raw_vlm_output)h+=`<details style="margin-top:12px"><summary style="font-size:12px;cursor:pointer;color:var(--text3)">Raw VLM output</summary><div class="raw-output">${esc(d.raw_vlm_output)}</div></details>`;
+  return h;
+}
+
+/* ── Benchmark ── */
+async function runBench(key,cardId,btn){
+  if(btn)btn.disabled=true;
+  // result div ids are br-<first-token> (r3-sds→br-r3, r1-manifest→br-r1, r0-backdoor→br-r0)
+  const out=document.getElementById('br-'+key.split('-')[0]);
+  out.innerHTML='<span class="spinner-inline"></span> Running…';
+  try{
+    const r=await fetch('/api/benchmark/'+key,{method:'POST'});
+    const d=await parseResponse(r);
+    out.innerHTML=renderBench(key,d);
+  }catch(e){out.innerHTML=`<div style="color:var(--red)">Error: ${esc(e.message)}</div>`;}
+  if(btn)btn.disabled=false;
+}
+
+async function runAllBench(){
+  const btn=document.getElementById('btn-bench-all');btn.disabled=true;btn.innerHTML='<span class="spinner-inline"></span>Running…';
+  for(const k of ['r0-backdoor','r1-manifest','r2-attack','r3-sds','r5b-context','b2-attention','b4-tciv','b5-phantom']){
+    await runBench(k,null,null);
+  }
+  btn.disabled=false;btn.textContent='Run All';
+}
+
+function renderBench(key,d){
+  if(d.status==='error')return`<div style="color:var(--red);font-size:11px">Error: ${esc((d.error||'').substring(0,200))}</div>`;
+  const ms=`<div style="color:var(--text3);font-size:10px;margin-bottom:4px">${d.duration_ms}ms</div>`;
+  switch(key){
+    case'r3-sds':return ms+tbl(['Scenario','SDS','Drifted'],d.data.cases.map(c=>[c.label,`<span class="metric-val">${c.sds.toFixed(4)}</span>`,c.drifted?'<span style="color:var(--red)">✗ Yes</span>':'<span style="color:var(--green)">✓ No</span>']));
+    case'b4-tciv':return ms+tbl(['Test','Tool','Verdict','Layer'],d.data.cases.map(c=>[c.name,c.tool,c.passed?'<span class="badge badge-pass">PASS</span>':'<span class="badge badge-blocked">BLOCKED</span>',c.layer_failed||'—']))+`<div style="margin-top:6px;font-size:11px"><span class="lbl">FPR:</span> <span class="metric-val">${(d.data.fpr*100).toFixed(1)}%</span></div>`;
+    case'b5-phantom':return ms+tbl(['Tool','Worm','Drift','Reason'],d.data.payloads.map(p=>[p.tool,p.worm?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--green)">✓</span>',`<span class="metric-val">${p.drift.toFixed(4)}</span>`,p.reason]))+`<div style="margin-top:6px;font-size:11px"><span class="lbl">APR:</span> <span class="metric-val">${(d.data.apr*100).toFixed(1)}%</span></div>`;
+    case'r5b-context':return ms+tbl(['Hop','CPR','CBD'],d.data.hops.map(h=>[h.hop,`<span class="metric-val">${h.cpr.toFixed(4)}</span>`,h.cbd_reached?'<span style="color:var(--red)">✗ Reached</span>':'—']))+`<div style="margin-top:6px;font-size:11px"><span class="lbl">CBD:</span> <span class="metric-val">${d.data.cbd===-1?'Not reached':'Hop '+d.data.cbd}</span></div>`;
+    case'b2-attention':{const a=d.data.adversarial;return ms+`<div style="font-size:11px;margin-bottom:4px">Baseline: ${d.data.clean_passes.length} clean passes</div>`+`<div style="font-size:12px"><strong>Adversarial:</strong> <span class="badge badge-${a.passed?'pass':'blocked'}">${a.verdict}</span> ADR=<span class="metric-val">${a.adr.toFixed(4)}</span> AER=<span class="metric-val">${a.aer.toFixed(4)}</span> Mahal=<span class="metric-val">${a.mahal.toFixed(4)}</span></div>`+(a.block_reason?`<div style="font-size:11px;color:var(--red);margin-top:4px">${esc(a.block_reason)}</div>`:'');}
+    case'r2-attack':return ms+tbl(['Metric','Clean','Adversarial','Δ'],[['ADR',d.data.clean.adr.toFixed(4),d.data.adversarial.adr.toFixed(4),fmt(d.data.deltas.adr)],['AER',d.data.clean.aer.toFixed(4),d.data.adversarial.aer.toFixed(4),fmt(d.data.deltas.aer)],['KL',d.data.clean.kl.toFixed(4),d.data.adversarial.kl.toFixed(4),fmt(d.data.deltas.kl)]])+`<div style="font-size:11px;margin-top:4px">${d.data.steps} steps · ${d.data.layers} layers · ${d.data.flagged?'<span style="color:var(--red)">Flagged</span>':'Not flagged'}</div>`;
+    case'r1-manifest':{
+      const o=d.data.overall||{};
+      const groups=d.data.groups||[];
+      return ms+`<div style="font-size:12px;margin-bottom:6px">Models: <strong>${esc((d.data.models||[]).join(', '))}</strong> · mean ISR=<span class="metric-val">${o.mean_isr??'—'}</span> · SBI pass rate=<span class="metric-val">${o.sbi_pass_rate??'—'}</span></div>`+
+        tbl(['Model','Attack','ε','ISR','SSIM','SBI','N'], groups.slice(0,12).map(g=>[esc(g.model),esc(g.attack),g.epsilon,g.mean_isr,g.mean_ssim,g.sbi?'<span class="badge badge-pass">PASS</span>':'<span class="badge badge-blocked">FAIL</span>',g.n]));
+    }
+    case'r0-backdoor':{
+      const ev=d.data.backdoor_eval||{}; const b0=d.data.b0_detection||{};
+      return ms+`<div style="font-size:12px">ASR=<span class="metric-val">${ev.attack_success_rate??'—'}</span> · CA=<span class="metric-val">${ev.clean_accuracy??'—'}</span> · target=<code>${esc(ev.target_tool||'')}</code></div>`+
+        `<div style="font-size:12px;margin-top:4px">B0 detected=<strong>${b0.backdoor_detected}</strong> · class=<code>${esc(b0.poisoned_class||'—')}</code> · expected=<code>${esc(b0.expected_target||'—')}</code></div>`;
+    }
+    default:return'<pre>'+JSON.stringify(d.data,null,2)+'</pre>';
+  }
+}
+
+function tbl(hds,rows){let h='<table><tr>'+hds.map(h=>'<th>'+h+'</th>').join('')+'</tr>';for(const r of rows)h+='<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>';return h+'</table>';}
+function fmt(v){const s=v>=0?'+':'';return`<span class="metric-val">${s}${v.toFixed(4)}</span>`;}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

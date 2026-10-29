@@ -1,0 +1,77 @@
+{
+  "title": "FISSION Cross-Architecture Benchmark \u2014 LLaVA complete \u00b7 Qwen/InternVL2 pending",
+  "generated_at": "2026-07-20 13:47:04 UTC",
+  "models": [
+    "llava:latest"
+  ],
+  "attacks": [
+    "fgsm"
+  ],
+  "groups": [
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 1,
+      "n": 5,
+      "mean_isr": 0.48,
+      "mean_ssim": 0.9971,
+      "mean_sds": 0.4203,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 2,
+      "n": 5,
+      "mean_isr": 0.52,
+      "mean_ssim": 0.9887,
+      "mean_sds": 0.4419,
+      "sbi": true,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 4,
+      "n": 5,
+      "mean_isr": 0.42,
+      "mean_ssim": 0.9565,
+      "mean_sds": 0.4683,
+      "sbi": false,
+      "mean_delta_isr": null
+    },
+    {
+      "model": "llava:latest",
+      "attack": "fgsm",
+      "epsilon": 8,
+      "n": 5,
+      "mean_isr": 0.46,
+      "mean_ssim": 0.8506,
+      "mean_sds": 0.4393,
+      "sbi": false,
+      "mean_delta_isr": null
+    }
+  ],
+  "overall": {
+    "n_entries": 60,
+    "n_groups": 4,
+    "n_models": 1,
+    "mean_isr": 0.47,
+    "mean_ssim": 0.9482,
+    "mean_sds": 0.4425,
+    "sbi_pass_groups": 1,
+    "sbi_pass_rate": 0.25,
+    "baseline_isr": null
+  },
+  "defenses": [],
+  "source_manifests": [
+    "adversarial_dataset/cross_model/manifest_merged.json"
+  ],
+  "notes": [
+    "Only LLaVA rows contain ISR/SDS (real prior run). Qwen2.5-VL and InternVL2 rows are pending live Ollama inference; SSIM may still appear because adversarial images are shared (model-agnostic generate stage).",
+    "Run: python -m evaluation.cross_model --models qwen2.5vl:7b internvl2:8b --stage infer",
+    "Non-LLaVA results, once filled, are TRANSFER attacks until per-model probes exist (Session 17)."
+  ],
+  "cross_architecture": true
+}

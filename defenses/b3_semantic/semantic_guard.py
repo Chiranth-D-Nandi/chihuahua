@@ -145,10 +145,10 @@ class SemanticGuard:
             if not isinstance(arg_value, str):
                 continue
 
-            # Skip very short strings (IDs like "doc_001" are identifiers,
+            # Skip identifiers (IDs like "doc_001" are identifiers,
             # not semantic content — comparing them against descriptions
-            # produces noise). Threshold: at least 3 chars of real content.
-            if len(str(arg_value).strip()) <= 2:
+            # produces noise).
+            if arg_name.endswith("_id") or "identifier" in expected_meaning.lower():
                 continue
 
             score = _cosine_sim(str(arg_value), expected_meaning)

@@ -1,0 +1,8 @@
+{
+  "stem": "synthetic_04",
+  "genre": "Commercial Vendor Invoice",
+  "ssim": 0.9702,
+  "probe_target_prob": 99.55,
+  "probe_pred": "query_database",
+  "probe_flip": true
+}

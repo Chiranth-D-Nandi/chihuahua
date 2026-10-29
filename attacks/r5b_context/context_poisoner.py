@@ -490,9 +490,10 @@ def run_context_poisoning_benchmark(
     print("  " + "-" * 65)
     for h in result.hop_results:
         flag = "  <-- CBD" if h.cbd_reached else ""
+        reached_str = "[REACHED]" if h.cbd_reached else "no"
         print(
             f"  {h.hop:>4}  {h.cpr:>12.4f}  "
-            f"{'[REACHED]':>12 if h.cbd_reached else 'no':>12}  "
+            f"{reached_str:>12}  "
             f"{h.injected_text_cosine:.4f}{flag}"
         )
     print("=" * 65)

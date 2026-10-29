@@ -165,9 +165,9 @@ class DefenseConfig:
     min_baseline_samples: int = 10
 
     # B3 Semantic Guard
-    ics_threshold: float = 0.20        # Intent-Context cosine similarity below this = hijack
-    asv_threshold: float = 0.25        # Arg-expected cosine below this = wrong arg
-    asv_block_ratio: float = 0.5       # fraction of args below ASV threshold to block
+    ics_threshold: float = 0.05        # Intent-Context cosine similarity below this = hijack (calibrated from 0.20 to reduce benign false positives)
+    asv_threshold: float = 0.05        # Arg-expected cosine below this = wrong arg (calibrated from 0.25 to prevent benign false positives on single-word database/table names)
+    asv_block_ratio: float = 0.60      # fraction of args below ASV threshold to block (calibrated from 0.50 to accommodate identifier parameters)
     bsd_percentile: float = 95.0       # Behavioural Shift Detection — ICS must be below this percentile of clean baseline to flag
 
     # B4 TCIV

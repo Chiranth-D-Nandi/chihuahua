@@ -196,7 +196,7 @@ class RedisMCPBus:
 
     # ── Send ─────────────────────────────────────────────────────
 
-    def send(self, msg: MCPMessage):
+    def send(self, msg: MCPMessage, timeout: Optional[float] = None):
         """Put a message on the recipient's stream/queue."""
         msg.timestamp = time.time()
         log_entry = {

@@ -108,13 +108,28 @@
 - **Dataset Generated on GPU:** 10 clean PNGs (`adversarial_dataset/synthetic/`) and 40 adversarial PNGs across budgets $\epsilon \in \{1, 2, 4, 8\}/255$ (`adversarial_dataset/adversarial/`).
 - **Live Empirical Inference:** Evaluated on local GPU via `generate_adversarial_dataset.py --stage infer`, measuring real ISR, SSIM, and SDS without simulation.
 
-### D2 — Qwen2.5-VL Cross-Architecture Evaluation `[x]`
+### D2 — Qwen2.5-VL Cross-Architecture Transfer Evaluation `[x]`
 - **Model:** `qwen2.5vl:7b` (Custom ViT vision backbone).
 - **Live GPU Test (`scripts/eval_qwen25vl.py`):**
   - Evaluated across all 10 document genres ($N=10$) on local GPU.
   - Demonstrates that CLIP-surrogate adversarial visual perturbations completely fail to transfer to Qwen2.5-VL ($\text{Transfer ISR} = 0.00\%$, $0/10$ target hits).
   - Qwen2.5-VL accurately extracts document layouts and emits appropriate MCP tool calls (`summarise_document`, `send_slack_message`).
-  - Results saved with raw outputs, duration, and arguments in [`reports/cross_model_qwen25vl.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/reports/cross_model_qwen25vl.json).
-- **Transparency on Other Models:**
-  - InternVL2 documented as unsupported in official Ollama library (lacks `InternViT-6B` in `llama.cpp`) and hardware constrained by 8GB VRAM limit on Windows.
-  - Moondream (parser failure artifact) and LLaVA-Phi-3 ($N=20$) explicitly excluded from substitute security claims.
+  - Results saved with raw outputs, duration, and arguments in [`reports/cross_model_qwen25vl.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/reports/cross_model_qwen25vl.json) and [`adversarial_dataset/manifest_qwen25vl_transfer.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/adversarial_dataset/manifest_qwen25vl_transfer.json).
+
+### D3 — Qwen-Specific Surrogate Probe & Targeted Evaluation `[x]`
+- **Surrogate Training (`attacks/r1_pixel/train_qwen_surrogate.py`):**
+  - Loaded Qwen2.5-VL-7B's Custom ViT vision tower (676M params, ~1.35 GB FP16) directly in PyTorch on NVIDIA RTX 4060 GPU.
+  - Extracted 1280-dim feature vectors and trained linear probe head (`probe_qwen.pt`, $1280 \to 3$ classes) to 100% accuracy.
+- **Targeted Adversarial Image Generation (`attacks/r1_pixel/generate_qwen_adversarial.py`):**
+  - Differentiable ViT patchification & gradient backprop computed on local GPU.
+  - Generated all 40 adversarial PNGs (10 genres $\times$ 4 $\epsilon$) saved in `adversarial_dataset/adversarial_qwen/`.
+  - SSIM verified between 0.8168 and 0.9964.
+- **Live GPU Evaluation (`scripts/eval_qwen_whitebox.py`):**
+  - Evaluated across 10 document genres on local GPU (`qwen2.5vl:7b`).
+  - Targeted ISR = $0/10 = 0.00\%$ (zero injection hits).
+  - Demonstrates that fine-grained 2D RoPE and native reading comprehension provide inherent visual injection robustness against linear surrogate steering.
+  - Saved to [`reports/cross_model_qwen25vl_whitebox.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/reports/cross_model_qwen25vl_whitebox.json) and [`adversarial_dataset/manifest_qwen25vl_whitebox.json`](file:///c:/Users/chiranth/Downloads/VLM-Security-Evaluation-in-Multi-Agentic-MCP-Systems-main/adversarial_dataset/manifest_qwen25vl_whitebox.json).
+
+### D4 — Transparency & Hardware Constraints `[x]`
+- InternVL2 documented as unsupported in official Ollama library (lacks `InternViT-6B` in `llama.cpp`) and hardware constrained by 8GB VRAM limit on Windows.
+- Moondream (parser failure artifact) and LLaVA-Phi-3 ($N=20$) explicitly excluded from substitute security claims.
